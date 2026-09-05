@@ -2,10 +2,10 @@ package main
 
 import (
 	"log"
-
 	"mi3ad/internal/config"
-	"mi3ad/internal/db"
+	database "mi3ad/internal/db"
 	"mi3ad/internal/ws"
+
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 )
@@ -13,11 +13,19 @@ import (
 func main() {
 	cfg := config.Load()
 
-	database, err := db.Connect(cfg.DatabaseURL)
+	gormDB, err := database.Connect(cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
-	defer database.Close()
+	sqlDB, err := gormDB.DB()
+	if err != nil {
+		log.Fatalf("failed to get underlying sql.DB: %v", err)
+	}
+	defer sqlDB.Close()
+
+	if err := database.AutoMigrate(gormDB); err != nil {
+		log.Fatalf("failed to run auto-migration: %v", err)
+	}
 
 	e := echo.New()
 	e.Use(middleware.RequestLogger())
