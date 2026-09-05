@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/echo-backend/MohammadGhaithAlmalek/internal/config"
-	"github.com/echo-backend/MohammadGhaithAlmalek/internal/db"
-	"github.com/echo-backend/MohammadGhaithAlmalek/internal/ws"
+	"mi3ad/internal/config"
+	"mi3ad/internal/db"
+	"mi3ad/internal/ws"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 )

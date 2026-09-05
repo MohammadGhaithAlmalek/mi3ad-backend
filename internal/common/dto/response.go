@@ -70,6 +70,42 @@ type PagingMeta struct {
 	Next        *int `json:"next"`
 }
 
+// NewPagingMeta computes paging metadata from a total row count and the
+// requested page/perPage. Callers don't need to compute lastPage/prev/next
+// by hand - just pass what the query returned.
+func NewPagingMeta(total int64, page, perPage int) PagingMeta {
+	if perPage < 1 {
+		perPage = 1
+	}
+
+	lastPage := int(total) / perPage
+	if int(total)%perPage != 0 {
+		lastPage++
+	}
+	if lastPage < 1 {
+		lastPage = 1
+	}
+
+	var prev, next *int
+	if page > 1 {
+		p := page - 1
+		prev = &p
+	}
+	if page < lastPage {
+		n := page + 1
+		next = &n
+	}
+
+	return PagingMeta{
+		Total:       int(total),
+		CurrentPage: page,
+		PerPage:     perPage,
+		LastPage:    lastPage,
+		Prev:        prev,
+		Next:        next,
+	}
+}
+
 // PaginatedResponse wraps a paginated list. Equivalent of PaginatedResponseDto<T>.
 type PaginatedResponse[T any] struct {
 	MessageResponse
@@ -87,4 +123,12 @@ func NewPaginatedResponse[T any](data []T, meta PagingMeta, message ...string) P
 		Data:            data,
 		Meta:            meta,
 	}
+}
+
+// ValidationErrorResponse is returned when request validation fails.
+// Fields maps the struct field name to the failed validation tag,
+// e.g. {"Email": "email", "Password": "min"}.
+type ValidationErrorResponse struct {
+	MessageResponse
+	Fields map[string]string `json:"fields"`
 }
